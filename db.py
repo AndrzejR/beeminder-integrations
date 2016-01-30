@@ -30,6 +30,47 @@ def load_dp_id(datapoint_date, bm_url):
     except Exception as exc:
         logging.error(exc)
 
+
+def load_dp(datapoint_date, bm_url):
+    """Returns the datapoint for the given date.
+    Arguments:
+    datapoint_date -- date
+    Returns None if there is no datapoint for the given date.
+    """
+
+    if not isinstance(datapoint_date, date):
+        raise ValueError('Incorrect argument type - datapoint_date.')
+
+    datapoint = None
+    try:
+        logging.debug("received datapoint_date: " + str(datapoint_date))
+        cur = CONNECTION.cursor()
+        params = (datapoint_date, bm_url)
+        cur.execute('select id, value from bm_datapoint where daystamp=? and bm_url=?', params)
+        datapoint = cur.fetchone()
+        logging.debug('datapoint from db: ' + str(datapoint))
+        return datapoint
+
+    except Exception as exc:
+        logging.error(exc)
+
+def update_dp(datapoint_id, value=0):
+    """Updates the given datapoint for the given date into the db."""
+    try:
+        cur = CONNECTION.cursor()
+        datapoint = (value, datapoint_id)
+        logging.debug(datapoint)
+        cur.execute("""update bm_datapoint
+                    set value=?
+                    where id=?
+                    """
+                    , datapoint)
+        CONNECTION.commit()
+
+    except Exception as exc:
+        logging.error(exc)
+
+
 def write_dp_id(datapoint_id, datapoint_date, bm_url, value=0):
     """Writes the datapoint id for the given date into the db."""
     try:

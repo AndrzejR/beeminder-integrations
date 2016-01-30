@@ -31,7 +31,9 @@ class HabitAPI(object):
 
     def is_daily_completed(self, daily_id):
         """Returns if the daily is completed today - boolean.
-        Habitica only makes the today's status available.
+        Other than today's status could be taken from history, however,
+        as history is described as causing major performance problems
+        on habitica's API page, maybe better not count on it.
         """
         try:
             payload = {'x-api-user':self.user_agent, 'x-api-key':self.api_token}        

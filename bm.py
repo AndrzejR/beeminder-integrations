@@ -15,12 +15,12 @@ DT_FORMAT = '%Y-%m-%d %H:%M:%S'
 class BeemAPI(object):
     """A wrapper class for Beeminder's API requests."""
 
-    URL = 'https://www.beeminder.com/api/v1/'
+    URL = 'https://www.beeminder.com/api/v1'
 
-    def __init__(self):
+    def __init__(self, bm_goal_url):
         self.auth_token = db.get_parameter('bm_api_token')
         self.user = db.get_parameter('bm_user_name')
-        self.goal = db.get_parameter('bm_goal_url')
+        self.goal = bm_goal_url
 
     def is_updated(self):
         """Returns if bm user was updated at all since last run."""
