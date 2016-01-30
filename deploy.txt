@@ -1,0 +1,10 @@
+1. copy to the server (e.g. AWS)
+2. run db_create.py
+3. insert parameters into the db:
+    bm_api_token
+    bm_goal_url
+    bm_user_name
+    toggl_api_token
+    toggl_user_agent
+    toggl_wrkspc_id
+4. create/modify cron job
