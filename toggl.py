@@ -7,6 +7,14 @@ from datetime import date
 
 import db
 
+def get_workspaces():
+    api_token = db.get_parameter('toggl_api_token')
+    user_agent = db.get_parameter('toggl_user_agent')
+    payload = {'user_agent':user_agent}
+    response = requests.get('https://www.toggl.com/api/v8/workspaces',
+                     auth=(api_token, 'api_token'), params=payload)
+    return json.dumps(response.json())    
+
 def get_data(datapoint_date):
     """Requests summary time for a given date and returns in hours."""
     api_token = db.get_parameter('toggl_api_token')
@@ -45,5 +53,7 @@ if __name__ == "__main__":
     logging.basicConfig(filename=LOG_DIR + LOG_DATE + '.log',
                          level=logging.DEBUG, format=LOG_FORMAT)
 
-    TODAY = date.today()
-    get_data(TODAY)
+    # TODAY = date.today()
+    # get_data(TODAY)
+    print(get_workspaces())
+    

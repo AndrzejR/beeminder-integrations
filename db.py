@@ -7,7 +7,7 @@ from datetime import date
 DATABASE_FILE = 'bm_in.db'
 CONNECTION = sqlite3.connect(DATABASE_FILE)
 
-def load_dp_id(datapoint_date):
+def load_dp_id(datapoint_date, bm_url):
     """Returns the datapoint id for the given date.
     Arguments:
     datapoint_date -- date
@@ -21,8 +21,8 @@ def load_dp_id(datapoint_date):
     try:
         logging.debug("received datapoint_date: " + str(datapoint_date))
         cur = CONNECTION.cursor()
-        dp_t = datapoint_date,
-        cur.execute('select id from bm_datapoint where daystamp=?', dp_t)
+        params = (datapoint_date, bm_url)
+        cur.execute('select id from bm_datapoint where daystamp=? and bm_url=?', params)
         datapoint_id = cur.fetchone()
         logging.debug('datapoint_id from db: ' + str(datapoint_id))
         return datapoint_id[0]
@@ -30,16 +30,16 @@ def load_dp_id(datapoint_date):
     except Exception as exc:
         logging.error(exc)
 
-def write_dp_id(datapoint_id, datapoint_date, value=0):
+def write_dp_id(datapoint_id, datapoint_date, bm_url, value=0):
     """Writes the datapoint id for the given date into the db."""
     try:
         cur = CONNECTION.cursor()
-        datapoint = (datapoint_id, value, datapoint_date)
+        datapoint = (datapoint_id, value, datapoint_date, bm_url)
         logging.debug(datapoint)
         cur.execute("""insert into bm_datapoint
-                    (id, value, daystamp)
+                    (id, value, daystamp, bm_url)
                     values
-                    (?,?,?)"""
+                    (?,?,?,?)"""
                     , datapoint)
         CONNECTION.commit()
 
@@ -58,6 +58,18 @@ def get_parameter(param_name):
     except Exception as exc:
         logging.error(exc)
 
+def get_active_dailies():
+    try:
+        cur = CONNECTION.cursor()
+        cur.execute("""select habitica_id
+                    , bm_url
+                    from bm_goal_xref
+                    where is_active=1""")
+        return cur.fetchall()
+
+    except Exception as exc:
+        logging.error(exc)
+
 if __name__ == '__main__':
 
     LOG_DIR = './logs/test/db_'
@@ -71,23 +83,23 @@ if __name__ == '__main__':
         logging.debug('*** read test ***')
         cur = CONNECTION.cursor()
         cur.execute("""insert into bm_datapoint
-                    (id, value, daystamp)
+                    (id, value, daystamp, bm_url)
                     values
-                    ('abc1', 10, '2015-05-16')
+                    ('abc1', 10, '2016-01-30', 'test_url')
                     """)
         cur.execute("""insert into bm_datapoint
-                    (id, value, daystamp)
+                    (id, value, daystamp, bm_url)
                     values
-                    ('abc2', 5, '2015-05-01')
+                    ('abc2', 5, '2015-05-01', 'test_url')
                     """)
         CONNECTION.commit()
 
         TODAY = date.today()
         logging.debug(TODAY)
-        logging.debug("today's dp: " + str(load_dp_id(TODAY)))
+        logging.debug("today's dp: " + str(load_dp_id(TODAY, 'test_url')))
 
         TEST_DATE = date(2015, 5, 1)
-        logging.debug("2015-05-01's dp: " + str(load_dp_id(TEST_DATE)))
+        logging.debug("2015-05-01's dp: " + str(load_dp_id(TEST_DATE, 'test_url')))
 
     finally:
         cur.execute("""delete from bm_datapoint
@@ -97,8 +109,8 @@ if __name__ == '__main__':
     try:
         logging.debug('*** write test ***')
         WRITE_TEST_DATE = date(2015, 1, 13)
-        write_dp_id('write_test_1', WRITE_TEST_DATE, 13)
-        logging.debug("write test dp: " + str(load_dp_id(WRITE_TEST_DATE)))
+        write_dp_id('write_test_1', WRITE_TEST_DATE, value=13, bm_url='test_url')
+        logging.debug("write test dp: " + str(load_dp_id(WRITE_TEST_DATE, 'test_url')))
     finally:
         cur = CONNECTION.cursor()
         cur.execute("""delete from bm_datapoint
@@ -117,3 +129,6 @@ if __name__ == '__main__':
         cur.execute("""delete from parameter
                     where param_name in ('test_param')""")
         CONNECTION.commit()
+
+    print("***get_active_dailies***")
+    print(get_active_dailies())

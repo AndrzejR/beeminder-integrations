@@ -14,7 +14,8 @@ CURSOR.execute('''create table if not exists bm_datapoint
                , updated_at integer
                , daystamp text
                , comment text
-               , requestid text)
+               , requestid text
+               , bm_url text)
                ''')
 
 CURSOR.execute('''create table if not exists parameter
@@ -22,10 +23,12 @@ CURSOR.execute('''create table if not exists parameter
                , param_value text)
                ''')
 
-CURSOR.execute('''create table if not exists xref
-               (bm_id text primary key
+CURSOR.execute('''create table if not exists bm_goal_xref
+               (bm_url text primary key
+               , bm_name text               
+               , habitica_id text
                , habitica_name text
-               , timestamp integer);
+               , is_active int);
                ''')
 
 CONNECTION.commit()

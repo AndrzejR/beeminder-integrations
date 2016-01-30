@@ -6,22 +6,42 @@ import logging
 from datetime import date
 import db
 
-def get_data():
-    """Gets data"""
-    api_token = db.get_parameter('habitica_api_token')
-    user_agent = db.get_parameter('habitica_user_id')
-    print("user_agent: " + str(user_agent))
-    # habit = db.get_parameter('habitica_habit')
+class HabitAPI(object):
+    """Wrap the habitica API into an object."""
 
-    payload = {'x-api-user':user_agent, 'x-api-key':api_token}
-    
-    response = requests.get('https://habitica.com/api/v2/user/tasks/', headers=payload)
+    URL = 'https://habitica.com/api/v2/'
 
-    logging.debug(str(json.dumps(response.json(), sort_keys=True,
-                                 indent=4, separators=(',', ':'))))
+    def __init__(self):
+        self.api_token = db.get_parameter('habitica_api_token')
+        self.user_agent = db.get_parameter('habitica_user_id')    
 
-    print(str(json.dumps(response.json(), sort_keys=True,
-                                 indent=4, separators=(',', ':'))))
+    def get_tasks(self):
+        """Gets all tasks."""
+        try:
+            payload = {'x-api-user':self.user_agent, 'x-api-key':self.api_token}
+            
+            response = requests.get(HabitAPI.URL + 'user/tasks/', headers=payload)
+
+            logging.debug(str(json.dumps(response.json(), sort_keys=True,
+                                         indent=4, separators=(',', ':'))))
+
+            return response.json()
+        except Exception as exc:
+            logging.error(exc)
+
+    def is_daily_completed(self, daily_id):
+        """Returns if the daily is completed today - boolean.
+        Habitica only makes the today's status available.
+        """
+        try:
+            payload = {'x-api-user':self.user_agent, 'x-api-key':self.api_token}        
+            response = requests.get(HabitAPI.URL + 'user/tasks/' + str(daily_id), headers=payload)
+            logging.debug(str(json.dumps(response.json(), sort_keys=True,
+                                         indent=4, separators=(',', ':'))))
+            return response.json()['completed']
+
+        except Exception as exc:
+            logging.error(exc)
 
 if __name__ == "__main__":
 
@@ -32,4 +52,12 @@ if __name__ == "__main__":
     logging.basicConfig(filename=LOG_DIR + LOG_DATE + '.log',
                          level=logging.DEBUG, format=LOG_FORMAT)
 
-    get_data()
+    HB = HabitAPI()
+    HB.get_tasks()
+    print(HB.is_daily_completed('5b90e6d5-67d4-44c6-86c8-3a0c281d24f9'))
+
+
+# end result load either true or false into BM at the end of the day
+# I need true or false for the specific daily;
+# the daily should be configurable - config table with the names, ids, isactive of the mappings
+# from the pov of the job: for active job in the config: get today's completed
