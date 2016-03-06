@@ -1,4 +1,6 @@
-"""This is the main executable of the provider job."""
+"""This is the main executable of the provider job.
+Gets the data from the sources and upserts into the DCM.
+"""
 
 import logging
 import toggl, db, habitica

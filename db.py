@@ -154,6 +154,45 @@ def update_toggl_dcm(date_to_sync, currently_in_toggl):
     except Exception as exc:
         print(exc)
 
+def get_new_toggl_dcm_datapoints():
+    try:
+        cur = CONNECTION.cursor()
+        cur.execute("""select toggl_date
+                    , toggl_ms
+                    from dcm_toggl_datapoint
+                    where status = 1""")
+        return cur.fetchall()
+
+    except Exception as exc:
+        logging.error(exc)
+
+def get_modified_toggl_dcm_datapoints():
+    try:
+        cur = CONNECTION.cursor()
+        cur.execute("""select toggl_date
+                    , toggl_ms
+                    , bm_id
+                    from dcm_toggl_datapoint
+                    where status = 3""")
+        return cur.fetchall()
+
+    except Exception as exc:
+        logging.error(exc)
+
+def update_toggl_dcm_status(toggl_date, status, bm_id=None):
+    try:
+        cur = CONNECTION.cursor()
+        cur.execute("""update dcm_toggl_datapoint
+                    set status = ?
+                    , bm_id = ?
+                    where toggl_date = ?
+                    """
+                    , (status, bm_id, toggl_date))
+        CONNECTION.commit()
+
+    except Exception as exc:
+        print(exc)
+
 if __name__ == '__main__':
 
     LOG_DIR = './logs/test/db_'
