@@ -12,4 +12,5 @@ a. parameter table
     habitica_user_id
 b. bm_xref
 	habitica-beeminder goal mappings
-4. create/modify cron job
+4. create ./logs folder
+5. create/modify cron job

@@ -111,6 +111,49 @@ def get_active_dailies():
     except Exception as exc:
         logging.error(exc)
 
+def get_toggl_dcm_datapoint(dp_date):
+    try:
+        cur = CONNECTION.cursor()
+        cur.execute("""select toggl_ms
+                    , status
+                    from dcm_toggl_datapoint
+                    where toggl_date = ?"""
+                    , (dp_date,))
+        return cur.fetchone()
+
+    except Exception as exc:
+        logging.error(exc)
+
+def insert_toggl_dcm(date_to_sync, currently_in_toggl):
+    try:
+        cur = CONNECTION.cursor()
+        cur.execute("""insert into dcm_toggl_datapoint
+                    ( toggl_ms
+                    , status
+                    , toggl_date)
+                    values 
+                    (?, 1, ?)
+                    """
+                    , (currently_in_toggl, date_to_sync))
+        CONNECTION.commit()
+
+    except Exception as exc:
+        print(exc)
+
+def update_toggl_dcm(date_to_sync, currently_in_toggl):
+    try:
+        cur = CONNECTION.cursor()
+        cur.execute("""update dcm_toggl_datapoint
+                    set toggl_ms = ?
+                    , status = 3
+                    where toggl_date = ?
+                    """
+                    , (currently_in_toggl, date_to_sync))
+        CONNECTION.commit()
+
+    except Exception as exc:
+        print(exc)
+
 if __name__ == '__main__':
 
     LOG_DIR = './logs/test/db_'

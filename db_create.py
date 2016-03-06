@@ -31,4 +31,11 @@ CURSOR.execute('''create table if not exists bm_goal_xref
                , is_active int);
                ''')
 
+CURSOR.execute('''create table if not exists dcm_toggl_datapoint
+               (toggl_date text primary key
+               , toggl_ms integer
+               , status integer
+               , bm_id text);
+               ''')
+
 CONNECTION.commit()
